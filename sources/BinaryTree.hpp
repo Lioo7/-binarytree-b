@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <map>
 #include <vector>
-#include <string>
 #include "orderMethods.hpp"
 #define COUNT 10
 namespace ariel
@@ -19,13 +18,8 @@ namespace ariel
             Node *left;  // left child
             Node *right; //right child
             // constructors
-            Node() = default;
-            Node(T input_value)
-            {
-                this->value = input_value;
-                this->left = nullptr;
-                this->right = nullptr;
-            }
+            Node() = default; // TODO
+            Node(T input_value) : value(input_value), left(nullptr), right(nullptr) {}
             // destructor
             ~Node();
         };
@@ -37,7 +31,7 @@ namespace ariel
         std::multimap<T, Node *> my_tree; // contains all the nodes in the tree
 
         // this function makes a deep copy
-        void copy(Node *&from_tree, Node *&to_tree)
+        void copy(Node *from_tree, Node *to_tree)
         {
             if (from_tree == nullptr)
             {
@@ -45,7 +39,7 @@ namespace ariel
             }
             else
             {
-                to_tree = new Node(from_tree->data);
+                to_tree = new Node(from_tree->value);
                 copy(to_tree->right, from_tree->right);
                 copy(to_tree->left, from_tree->left);
             }
@@ -66,7 +60,7 @@ namespace ariel
                 auto search = my_tree.find(target_value);
                 if (search != my_tree.end())
                 {
-                    std::cout << "Found " << search->first << "->" << search->second << '\n';
+                    std::cout << "Found\n";
                     target_node = search->second;
                 }
                 else
@@ -246,6 +240,7 @@ namespace ariel
                 }
             }
 
+            Iterator(Node *node) : current(node) {} // TODO
             Iterator() : current(nullptr) {}
 
             T &operator*()
@@ -276,16 +271,11 @@ namespace ariel
             // i++;
             const Iterator operator++(int)
             {
-                Iterator temp;
+                Iterator temp(nodes_container[0]);
                 if (nodes_container.size() > 1)
                 {
-                    temp = *this;
                     nodes_container.erase(nodes_container.begin());
                     current = nodes_container[0];
-                }
-                else
-                {
-                    temp = nullptr;
                 }
                 return temp;
             }
