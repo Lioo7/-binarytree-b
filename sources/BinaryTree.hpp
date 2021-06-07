@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-using namespace std;
+#define COUNT 10
 namespace ariel
 {
     /*====================================Implementation-Of-A-Generic-Binary-Tree=============================*/
@@ -23,13 +23,12 @@ namespace ariel
             }
             // destructor
             ~Node();
-
         };
 
         /*===========================================Private-Methods=========================================*/
 
-        Node *root;                  // the root of the tree
-        multimap<T, Node *> my_tree; // contains all the nodes in the tree
+        Node *root;                       // the root of the tree
+        std::multimap<T, Node *> my_tree; // contains all the nodes in the tree
 
         // This function search the given node value in the tree and return a poniter to its node
         Node *search_node(T target_value)
@@ -64,7 +63,7 @@ namespace ariel
             this->root = nullptr;
         }
         // copy constructor
-        
+        BinaryTree(const BinaryTree &other);
 
         /*===========================================Insert-Methods=========================================*/
 
@@ -150,56 +149,129 @@ namespace ariel
         }
 
         /*========================================Inner-Iterator-Class==================================*/
-
+        // I got the idea from Lior Atiya
         class Iterator
         {
         private:
-            Node *p;
+            std::vector<Node<T> *> nodes_container;
+            Node *current;
+            // pre
+            void preorder_method()
+            {
+                nodes_container.clear();
+                current = this->root;
+                while (current)
+                {
+                    nodes_container.push_back(current);
+                    preorder_method(current->left);
+                    preorder_method(current->right);
+                }
+            }
+            // in
+            void inorder_method()
+            {
+                nodes_container.clear();
+                current = this->root;
+                while (current)
+                {
+                    inorder_method(current->left);
+                    nodes_container.push_back(current);
+                    inorder_method(current->right);
+                }
+            }
+            // post
+            void postorder_method()
+            {
+                nodes_container.clear();
+                current = this->root;
+                while (current)
+                {
+                    postorder_method()(current->left);
+                    postorder_method()(current->right);
+                    nodes_container.push_back(current);
+                }
+            }
 
         public:
-            Iterator()
+            Iterator(std::string order_method)
             {
+                switch (order_method)
+                {
+                case "pre":
+                    preorder_method();
+                    current = nodes_container[0];
+                    break;
+                case "in":
+                    inorder_method();
+                    current = nodes_container[0];
+                    break;
+                case "post":
+                    postorder_method();
+                    current = nodes_container[0];
+                    break;
+                default:
+                    throw std::invalid_argument("Error: invalid order_method");
+                    break;
+                }
             }
+
+            Iterator() : current(nullptr) {}
 
             T &operator*()
             {
-                return p->value;
+                return current->value;
             }
 
             T *operator->()
             {
-                return &(p->value);
+                return &(current->value);
             }
 
             // ++i;
             Iterator &operator++()
             {
-                p = p->left;
+                if (nodes_container.size() > 1)
+                {
+                    nodes_container.erase(nodes_container.begin());
+                    current->value = nodes_container[0];
+                }
+                else
+                {
+                    current = nullptr;
+                }
                 return *this;
             }
 
             // i++;
             const Iterator operator++(int)
             {
-                Iterator temp = *this;
-                p = p->left;
+                if (nodes_container.size() > 1)
+                {
+                    Iterator temp = *this;
+                    nodes_container.erase(nodes_container.begin());
+                    current->value = nodes_container[0];
+                }
+                else
+                {
+                    temp = nullptr;
+                }
                 return temp;
             }
 
             bool operator==(const Iterator &other)
             {
-                return p == other.p;
+                return current == other.current;
             }
 
             bool operator!=(const Iterator &other)
             {
-                return p != other.p;
+                return current != other.current;
             }
         };
 
         /*==========================================iterators-Methods===========================================*/
 
-        Iterator begin()
+        Iterator begin("in")
         {
             return Iterator();
         }
@@ -207,7 +279,7 @@ namespace ariel
         {
             return Iterator();
         }
-        Iterator begin_preorder()
+        Iterator begin_preorder("pre")
         {
             return Iterator();
         }
@@ -215,7 +287,7 @@ namespace ariel
         {
             return Iterator();
         }
-        Iterator begin_inorder()
+        Iterator begin_inorder("in")
         {
             return Iterator();
         }
@@ -223,7 +295,7 @@ namespace ariel
         {
             return Iterator();
         }
-        Iterator begin_postorder()
+        Iterator begin_postorder("post")
         {
             return Iterator();
         }
@@ -232,11 +304,36 @@ namespace ariel
             return Iterator();
         }
 
+        /*==================================================Utility-Function================================================*/
+        // source: https://www.geeksforgeeks.org/print-binary-tree-2-dimensions/
+        void print_tree(Node *root, int space, std::ostream &os)
+        {
+            // Base case
+            if (root == NULL)
+                return;
+
+            // Increase distance between levels
+            space += COUNT;
+
+            // Process right child first
+            print_tree(root->right, space);
+
+            // Print current node after space count
+            os << endl;
+            for (int i = COUNT; i < space; i++)
+                cout << " ";
+            coosut << root->value << "\n";
+
+            // Process left child
+            print_tree(root->left, space);
+        }
+
         /*========================================Operator-Overloading===========================================*/
 
         friend std::ostream &operator<<(std::ostream &os, const BinaryTree &tree)
         {
-            // TODO: add some code here
+            // Pass initial space count as 0
+            print_tree(tree->root, 0, os);
             return os;
         }
     };
