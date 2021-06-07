@@ -1,5 +1,9 @@
 #include <iostream>
 #include <stdio.h>
+#include <map>
+#include <vector>
+#include <string>
+#include "orderMethods.hpp"
 #define COUNT 10
 namespace ariel
 {
@@ -14,7 +18,8 @@ namespace ariel
             T value;     // the value of the node
             Node *left;  // left child
             Node *right; //right child
-            // constructor
+            // constructors
+            Node() = default;
             Node(T input_value)
             {
                 this->value = input_value;
@@ -23,10 +28,22 @@ namespace ariel
             }
             // destructor
             ~Node();
+
+            // overloading
+            bool operator==(Node other)
+            {
+                return this->value == other->value && this->left == other->left && this->right == other->right;
+            }
+
+            bool operator!=(Node other)
+            {
+                return this->value != other->value || this->left != other->left || this->right != other->right;
+            }
         };
 
         /*===========================================Private-Methods=========================================*/
 
+    private:
         Node *root;                       // the root of the tree
         std::multimap<T, Node *> my_tree; // contains all the nodes in the tree
 
@@ -95,7 +112,7 @@ namespace ariel
                 throw std::invalid_argument("Error: can't add this element beacuse the tree is empty");
             }
 
-            Node p = search_node(parent);
+            Node *p = search_node(parent);
             // parent does not exist
             if (p == nullptr)
             {
@@ -153,13 +170,13 @@ namespace ariel
         class Iterator
         {
         private:
-            std::vector<Node<T> *> nodes_container;
+            std::vector<Node *> nodes_container;
             Node *current;
             // pre
-            void preorder_method()
+            void preorder_method(Node *root)
             {
                 nodes_container.clear();
-                current = this->root;
+                current = root;
                 while (current)
                 {
                     nodes_container.push_back(current);
@@ -168,10 +185,10 @@ namespace ariel
                 }
             }
             // in
-            void inorder_method()
+            void inorder_method(Node *root)
             {
                 nodes_container.clear();
-                current = this->root;
+                current = root;
                 while (current)
                 {
                     inorder_method(current->left);
@@ -180,33 +197,33 @@ namespace ariel
                 }
             }
             // post
-            void postorder_method()
+            void postorder_method(Node *root)
             {
                 nodes_container.clear();
-                current = this->root;
+                current = root;
                 while (current)
                 {
-                    postorder_method()(current->left);
-                    postorder_method()(current->right);
+                    postorder_method(current->left);
+                    postorder_method(current->right);
                     nodes_container.push_back(current);
                 }
             }
 
         public:
-            Iterator(std::string order_method)
+            Iterator(Methods order_method, Node *root)
             {
                 switch (order_method)
                 {
-                case "pre":
-                    preorder_method();
+                case preorder:
+                    preorder_method(root);
                     current = nodes_container[0];
                     break;
-                case "in":
-                    inorder_method();
+                case inorder:
+                    inorder_method(root);
                     current = nodes_container[0];
                     break;
-                case "post":
-                    postorder_method();
+                case postorder:
+                    postorder_method(root);
                     current = nodes_container[0];
                     break;
                 default:
@@ -233,7 +250,7 @@ namespace ariel
                 if (nodes_container.size() > 1)
                 {
                     nodes_container.erase(nodes_container.begin());
-                    current->value = nodes_container[0];
+                    current = nodes_container[0];
                 }
                 else
                 {
@@ -245,11 +262,12 @@ namespace ariel
             // i++;
             const Iterator operator++(int)
             {
+                Iterator temp;
                 if (nodes_container.size() > 1)
                 {
-                    Iterator temp = *this;
+                    temp = *this;
                     nodes_container.erase(nodes_container.begin());
-                    current->value = nodes_container[0];
+                    current = nodes_container[0];
                 }
                 else
                 {
@@ -271,33 +289,33 @@ namespace ariel
 
         /*==========================================iterators-Methods===========================================*/
 
-        Iterator begin("in")
+        Iterator begin()
         {
-            return Iterator();
+            return Iterator(inorder, this->root);
         }
         Iterator end()
         {
             return Iterator();
         }
-        Iterator begin_preorder("pre")
+        Iterator begin_preorder()
         {
-            return Iterator();
+            return Iterator(preorder, this->root);
         }
         Iterator end_preorder()
         {
             return Iterator();
         }
-        Iterator begin_inorder("in")
+        Iterator begin_inorder()
         {
-            return Iterator();
+            return Iterator(inorder, this->root);
         }
         Iterator end_inorder()
         {
             return Iterator();
         }
-        Iterator begin_postorder("post")
+        Iterator begin_postorder()
         {
-            return Iterator();
+            return Iterator(postorder, this->root);
         }
         Iterator end_postorder()
         {
@@ -306,7 +324,7 @@ namespace ariel
 
         /*==================================================Utility-Function================================================*/
         // source: https://www.geeksforgeeks.org/print-binary-tree-2-dimensions/
-        void print_tree(Node *root, int space, std::ostream &os)
+        static void print_tree(Node *root, int space, std::ostream &os)
         {
             // Base case
             if (root == NULL)
@@ -319,10 +337,10 @@ namespace ariel
             print_tree(root->right, space);
 
             // Print current node after space count
-            os << endl;
+            os << std::endl;
             for (int i = COUNT; i < space; i++)
-                cout << " ";
-            coosut << root->value << "\n";
+                os << " ";
+            os << root->value << "\n";
 
             // Process left child
             print_tree(root->left, space);
@@ -333,7 +351,7 @@ namespace ariel
         friend std::ostream &operator<<(std::ostream &os, const BinaryTree &tree)
         {
             // Pass initial space count as 0
-            print_tree(tree->root, 0, os);
+            BinaryTree<T>::print_tree(tree->root, 0, os);
             return os;
         }
     };
