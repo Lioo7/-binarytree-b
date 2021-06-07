@@ -28,17 +28,6 @@ namespace ariel
             }
             // destructor
             ~Node();
-
-            // overloading
-            bool operator==(Node other)
-            {
-                return this->value == other->value && this->left == other->left && this->right == other->right;
-            }
-
-            bool operator!=(Node other)
-            {
-                return this->value != other->value || this->left != other->left || this->right != other->right;
-            }
         };
 
         /*===========================================Private-Methods=========================================*/
@@ -47,10 +36,25 @@ namespace ariel
         Node *root;                       // the root of the tree
         std::multimap<T, Node *> my_tree; // contains all the nodes in the tree
 
+        // this function makes a deep copy
+        void copy(Node *&from_tree, Node *&to_tree)
+        {
+            if (from_tree == nullptr)
+            {
+                to_tree = nullptr;
+            }
+            else
+            {
+                to_tree = new Node(from_tree->data);
+                copy(to_tree->right, from_tree->right);
+                copy(to_tree->left, from_tree->left);
+            }
+        }
+
         // This function search the given node value in the tree and return a poniter to its node
         Node *search_node(T target_value)
         {
-            Node target_node;
+            Node *target_node;
             // the tree is empty
             if (this->root == nullptr)
             {
@@ -59,7 +63,17 @@ namespace ariel
             // the tree is not empty
             else
             {
-                target_node = my_tree.find(target_value);
+                auto search = my_tree.find(target_value);
+                if (search != my_tree.end())
+                {
+                    std::cout << "Found " << search->first << "->" << search->second << '\n';
+                    target_node = search->second;
+                }
+                else
+                {
+                    std::cout << "Not found\n";
+                    target_node = nullptr;
+                }
             }
 
             return target_node;
@@ -143,7 +157,7 @@ namespace ariel
                 throw std::invalid_argument("Error: can't add this element beacuse the tree is empty");
             }
 
-            Node p = search_node(parent);
+            Node *p = search_node(parent);
             // parent does not exist
             if (p == nullptr)
             {
@@ -353,6 +367,40 @@ namespace ariel
             // Pass initial space count as 0
             BinaryTree<T>::print_tree(tree->root, 0, os);
             return os;
+        }
+
+        BinaryTree &operator=(BinaryTree &&other) noexcept
+        {
+            // delete the root
+            if (this->root)
+            {
+                delete root;
+            }
+            // update the root to the other root
+            this->root = other.root;
+            // update the other root to be nullptr
+            other.root = nullptr;
+            return *this;
+        }
+
+        BinaryTree &operator=(const BinaryTree<T> &other)
+        {
+            // same tree
+            if (this == &other)
+            {
+                return *this;
+            }
+            // delete the old root
+            if (this->root != nullptr)
+            {
+                delete this->root;
+            }
+            // if the other tree has a root, then copy the tree
+            if (other.root != nullptr)
+            {
+                copy(other.root, this->root);
+            }
+            return *this;
         }
     };
 }
