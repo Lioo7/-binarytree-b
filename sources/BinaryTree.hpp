@@ -60,14 +60,21 @@ namespace ariel
                 auto search = my_tree.find(target_value);
                 if (search != my_tree.end())
                 {
-                    std::cout << "Found\n";
+                    // std::cout << target_value << " - Found\n";
                     target_node = search->second;
                 }
                 else
                 {
-                    std::cout << "Not found\n";
+                    // std::cout << target_value << " - Not found\n";
                     target_node = nullptr;
                 }
+                // std::cout << "my tree: ";
+                // for (auto kv : my_tree)
+                // {
+                //     auto &key = kv.first;
+                //     std::cout << key << ", ";
+                // }
+                // std::cout << std::endl;
             }
 
             return target_node;
@@ -103,6 +110,7 @@ namespace ariel
             // there is a root already
             else
             {
+                my_tree.erase(this->root->value);
                 root->value = new_root_value;
             }
             //inserts the root into the multimap
@@ -136,7 +144,10 @@ namespace ariel
             // the parent already has a left child
             else
             {
+                my_tree.erase(p->left->value);
                 p->left->value = left_child;
+                //inserts the new node into the multimap
+                add_to_map(left_child, p->left);
             }
 
             return *this;
@@ -167,7 +178,10 @@ namespace ariel
             // the parent already has a right child
             else
             {
+                my_tree.erase(p->right->value);
                 p->right->value = right_child;
+                //inserts the new node into the multimap
+                add_to_map(right_child, p->right);
             }
 
             return *this;
@@ -181,40 +195,37 @@ namespace ariel
             std::vector<Node *> nodes_container;
             Node *current;
             // pre
-            void preorder_method(Node *root)
+            void preorder_method(Node *current)
             {
-                nodes_container.clear();
-                current = root;
-                while (current)
+                if (current == nullptr)
                 {
-                    nodes_container.push_back(current);
-                    preorder_method(current->left);
-                    preorder_method(current->right);
+                    return;
                 }
+                nodes_container.push_back(current);
+                preorder_method(current->left);
+                preorder_method(current->right);
             }
             // in
-            void inorder_method(Node *root)
+            void inorder_method(Node *current)
             {
-                nodes_container.clear();
-                current = root;
-                while (current)
+                if (current == nullptr)
                 {
-                    inorder_method(current->left);
-                    nodes_container.push_back(current);
-                    inorder_method(current->right);
+                    return;
                 }
+                inorder_method(current->left);
+                nodes_container.push_back(current);
+                inorder_method(current->right);
             }
             // post
-            void postorder_method(Node *root)
+            void postorder_method(Node *current)
             {
-                nodes_container.clear();
-                current = root;
-                while (current)
+                if (current == nullptr)
                 {
-                    postorder_method(current->left);
-                    postorder_method(current->right);
-                    nodes_container.push_back(current);
+                    return;
                 }
+                postorder_method(current->left);
+                postorder_method(current->right);
+                nodes_container.push_back(current);
             }
 
         public:
@@ -272,11 +283,12 @@ namespace ariel
             const Iterator operator++(int)
             {
                 Iterator temp(nodes_container[0]);
-                if (nodes_container.size() > 1)
-                {
-                    nodes_container.erase(nodes_container.begin());
-                    current = nodes_container[0];
-                }
+                // if (nodes_container.size() > 1) //TODO
+                // {
+                //     nodes_container.erase(nodes_container.begin());
+                //     current = nodes_container[0];
+                // }
+                ++*this;
                 return temp;
             }
 
