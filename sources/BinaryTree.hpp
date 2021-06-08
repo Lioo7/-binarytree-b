@@ -3,7 +3,7 @@
 #include <map>
 #include <vector>
 #include "orderMethods.hpp"
-#define COUNT 10
+// #define COUNT 10
 namespace ariel
 {
     /*====================================Implementation-Of-A-Generic-Binary-Tree=============================*/
@@ -17,11 +17,8 @@ namespace ariel
             T value;     // the value of the node
             Node *left;  // left child
             Node *right; //right child
-            // constructors
-            Node() = default; // TODO
+            // constructor
             Node(T input_value) : value(input_value), left(nullptr), right(nullptr) {}
-            // destructor
-            ~Node() {}
         };
 
         /*===========================================Private-Methods=========================================*/
@@ -55,14 +52,9 @@ namespace ariel
         // This function search the given node value in the tree and return a poniter to its node
         Node *search_node(T target_value)
         {
-            Node *target_node;
-            // the tree is empty
-            if (this->root == nullptr)
-            {
-                target_node = nullptr;
-            }
+            Node *target_node = nullptr;
             // the tree is not empty
-            else
+            if (this->root != nullptr)
             {
                 auto search = my_tree.find(target_value);
                 if (search != my_tree.end())
@@ -93,6 +85,19 @@ namespace ariel
             my_tree.insert({node_value, node_pointer});
         }
 
+        void delete_all_the_nodes(Node *current)
+        {
+            if (current->left != nullptr)
+            {
+                delete_all_the_nodes(current->left);
+            }
+            if (current->right != nullptr)
+            {
+                delete_all_the_nodes(current->right);
+            }
+            delete current;
+        }
+
         /*===========================================Public-Methods=========================================*/
 
     public:
@@ -110,6 +115,16 @@ namespace ariel
                 copy(this->root, other.root);
             }
         }
+        // distructor
+        ~BinaryTree()
+        {
+            if (this->root != nullptr)
+            {
+                delete_all_the_nodes(this->root);
+            }
+        }
+        // move constructor
+        BinaryTree(BinaryTree &&tree) noexcept;
 
         /*===========================================Insert-Methods=========================================*/
 
@@ -143,25 +158,29 @@ namespace ariel
             }
 
             Node *p = search_node(parent);
-            // parent does not exist
-            if (p == nullptr)
+            // parent exists
+            if (p != nullptr)
             {
-                throw std::invalid_argument("Error: the parent does not exist in the tree");
+                // the parent has not a left child
+                if (p->left == nullptr)
+                {
+                    p->left = new Node(left_child);
+                    //inserts the new node into the multimap
+                    add_to_map(left_child, p->left);
+                }
+                // the parent already has a left child
+                else
+                {
+                    my_tree.erase(p->left->value);
+                    p->left->value = left_child;
+                    //inserts the new node into the multimap
+                    add_to_map(left_child, p->left);
+                }
             }
-            // the parent has not a left child
-            else if (p->left == nullptr)
-            {
-                p->left = new Node(left_child);
-                //inserts the new node into the multimap
-                add_to_map(left_child, p->left);
-            }
-            // the parent already has a left child
+
             else
             {
-                my_tree.erase(p->left->value);
-                p->left->value = left_child;
-                //inserts the new node into the multimap
-                add_to_map(left_child, p->left);
+                throw std::invalid_argument("Error: the parent does not exist in the tree");
             }
 
             return *this;
@@ -177,25 +196,29 @@ namespace ariel
             }
 
             Node *p = search_node(parent);
-            // parent does not exist
-            if (p == nullptr)
+            // parent exists
+            if (p != nullptr)
             {
-                throw std::invalid_argument("Error: the parent does not exist in the tree");
+                // the parent has not a right child
+                if (p->right == nullptr)
+                {
+                    p->right = new Node(right_child);
+                    //inserts the new node into the multimap
+                    add_to_map(right_child, p->right);
+                }
+                // the parent already has a right child
+                else
+                {
+                    my_tree.erase(p->right->value);
+                    p->right->value = right_child;
+                    //inserts the new node into the multimap
+                    add_to_map(right_child, p->right);
+                }
             }
-            // the parent has not a right child
-            else if (p->right == nullptr)
-            {
-                p->right = new Node(right_child);
-                //inserts the new node into the multimap
-                add_to_map(right_child, p->right);
-            }
-            // the parent already has a right child
+
             else
             {
-                my_tree.erase(p->right->value);
-                p->right->value = right_child;
-                //inserts the new node into the multimap
-                add_to_map(right_child, p->right);
+                throw std::invalid_argument("Error: the parent does not exist in the tree");
             }
 
             return *this;
@@ -265,7 +288,7 @@ namespace ariel
                 }
             }
 
-            Iterator(Node *node) : current(node) {} // TODO
+            Iterator(Node *node) : current(node) {}
             Iterator() : current(nullptr) {}
 
             T &operator*()
@@ -294,7 +317,7 @@ namespace ariel
             }
 
             // i++;
-            const Iterator operator++(int)
+            Iterator operator++(int)
             {
                 Iterator temp(nodes_container[0]);
                 ++*this;
@@ -351,24 +374,24 @@ namespace ariel
         // source: https://www.geeksforgeeks.org/print-binary-tree-2-dimensions/
         static void print_tree(Node *root, int space, std::ostream &os)
         {
-            // Base case
-            if (root == NULL)
-                return;
+            // // Base case
+            // if (root == NULL)
+            //     return;
 
-            // Increase distance between levels
-            space += COUNT;
+            // // Increase distance between levels
+            // space += COUNT;
 
-            // Process right child first
-            print_tree(root->right, space);
+            // // Process right child first
+            // print_tree(root->right, space);
 
-            // Print current node after space count
-            os << std::endl;
-            for (int i = COUNT; i < space; i++)
-                os << " ";
-            os << root->value << "\n";
+            // // Print current node after space count
+            // os << std::endl;
+            // for (int i = COUNT; i < space; i++)
+            //     os << " ";
+            // os << root->value << "\n";
 
-            // Process left child
-            print_tree(root->left, space);
+            // // Process left child
+            // print_tree(root->left, space);
         }
 
         /*========================================Operator-Overloading===========================================*/
