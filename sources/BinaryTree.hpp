@@ -30,13 +30,6 @@ namespace ariel
         // this function makes a deep copy
         void copy(Node *to_tree, const Node *from_tree)
         {
-            // TODO
-            // if (from_tree != nullptr)
-            // {
-            //     to_tree = new Node(from_tree->value);
-            //     copy(to_tree->right, from_tree->right);
-            //     copy(to_tree->left, from_tree->left);
-            // }
             if (from_tree->right != nullptr)
             {
                 to_tree->right = new Node(from_tree->right->value);
@@ -225,7 +218,7 @@ namespace ariel
         }
 
         /*========================================Inner-Iterator-Class==================================*/
-        // I got the idea from Lior Atiya
+        // Lior Atiya helped me with the class below
         class Iterator
         {
         private:
@@ -268,23 +261,30 @@ namespace ariel
         public:
             Iterator(Methods order_method, Node *root)
             {
-                switch (order_method)
+                if (root != nullptr)
                 {
-                case preorder:
-                    preorder_method(root);
-                    current = nodes_container[0];
-                    break;
-                case inorder:
-                    inorder_method(root);
-                    current = nodes_container[0];
-                    break;
-                case postorder:
-                    postorder_method(root);
-                    current = nodes_container[0];
-                    break;
-                default:
-                    throw std::invalid_argument("Error: invalid order_method");
-                    break;
+                    switch (order_method)
+                    {
+                    case preorder:
+                        preorder_method(root);
+                        current = nodes_container[0];
+                        break;
+                    case inorder:
+                        inorder_method(root);
+                        current = nodes_container[0];
+                        break;
+                    case postorder:
+                        postorder_method(root);
+                        current = nodes_container[0];
+                        break;
+                    default:
+                        throw std::invalid_argument("Error: invalid order_method");
+                        break;
+                    }
+                }
+                else
+                {
+                    this->current = nullptr;
                 }
             }
 
