@@ -21,7 +21,7 @@ namespace ariel
             Node() = default; // TODO
             Node(T input_value) : value(input_value), left(nullptr), right(nullptr) {}
             // destructor
-            ~Node();
+            ~Node() {}
         };
 
         /*===========================================Private-Methods=========================================*/
@@ -31,16 +31,23 @@ namespace ariel
         std::multimap<T, Node *> my_tree; // contains all the nodes in the tree
 
         // this function makes a deep copy
-        void copy(Node *from_tree, Node *to_tree)
+        void copy(Node *to_tree, const Node *from_tree)
         {
-            if (from_tree == nullptr)
+            // TODO
+            // if (from_tree != nullptr)
+            // {
+            //     to_tree = new Node(from_tree->value);
+            //     copy(to_tree->right, from_tree->right);
+            //     copy(to_tree->left, from_tree->left);
+            // }
+            if (from_tree->right != nullptr)
             {
-                to_tree = nullptr;
-            }
-            else
-            {
-                to_tree = new Node(from_tree->value);
+                to_tree->right = new Node(from_tree->right->value);
                 copy(to_tree->right, from_tree->right);
+            }
+            if (from_tree->left != nullptr)
+            {
+                to_tree->left = new Node(from_tree->left->value);
                 copy(to_tree->left, from_tree->left);
             }
         }
@@ -95,7 +102,14 @@ namespace ariel
             this->root = nullptr;
         }
         // copy constructor
-        BinaryTree(const BinaryTree &other);
+        BinaryTree(const BinaryTree &other)
+        {
+            if (other.root != nullptr)
+            {
+                this->root = new Node(other.root->value);
+                copy(this->root, other.root);
+            }
+        }
 
         /*===========================================Insert-Methods=========================================*/
 
@@ -283,11 +297,6 @@ namespace ariel
             const Iterator operator++(int)
             {
                 Iterator temp(nodes_container[0]);
-                // if (nodes_container.size() > 1) //TODO
-                // {
-                //     nodes_container.erase(nodes_container.begin());
-                //     current = nodes_container[0];
-                // }
                 ++*this;
                 return temp;
             }
@@ -400,7 +409,8 @@ namespace ariel
             // if the other tree has a root, then copy the tree
             if (other.root != nullptr)
             {
-                copy(other.root, this->root);
+                this->root = new Node{other.root->value};
+                copy(this->root, other.root);
             }
             return *this;
         }
